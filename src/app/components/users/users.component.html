@@ -1,0 +1,327 @@
+<div class="col-md-12">
+  <button
+    class="btn btn-danger"
+    data-toggle="modal"
+    data-target="#exampleModal"
+  >
+    Add User
+  </button>
+
+  <button class="btn btn-outline-danger ml-2" (click)="delUser($event)">
+    <i class="fa fa-trash" aria-hidden="true"></i>
+  </button>
+
+  <table
+    class="table table-bordered table-sm mt-2 table-hover"
+    *ngIf="loaded && users?.length > 0; else noUsers"
+  >
+    <thead>
+      <tr class="table-danger text-center">
+        <th scope="col">User</th>
+        <th scope="col">
+          Information
+
+          <button
+            class="btn btn-danger btn-sm mb-1"
+            type="button"
+            data-toggle="collapse"
+            data-target="#multiCollapseExample"
+            *ngIf="showExtend"
+            (click)="toogleDetails()"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+
+          <button
+            class="btn btn-danger btn-sm mb-1"
+            type="button"
+            data-toggle="collapse"
+            data-target="#multiCollapseExample"
+            *ngIf="!showExtend"
+            (click)="toogleDetails()"
+          >
+            <i class="fas fa-eye-slash"></i>
+          </button>
+        </th>
+      </tr>
+    </thead>
+    <tbody *ngFor="let user of users">
+      <tr>
+        <td class="text-center">
+          <img
+            *ngIf="user.image"
+            [src]="user.image"
+            width="100"
+            height="100"
+            alt="avatar"
+          />
+        </td>
+        <td class="text-left">
+          <ul class="list-group">
+            <li
+              [ngClass]="{
+                'list-group-item': true
+              }"
+            >
+              <b>Name :</b> {{ user.firstName | uppercase }}
+              {{ user.lastName }}
+            </li>
+            <li
+              [ngClass]="{
+                'list-group-item': true
+              }"
+            >
+              <b>Age :</b> {{ user.age }}
+
+              <div class="collapse multi-collapse" id="multiCollapseExample">
+                <div class="input-group mb-3 mt-2">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">
+                      <i class="fa fa-file-text" aria-hidden="true"></i>
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    readonly
+                    class="form-control"
+                    value="{{ user.email }}"
+                  />
+                </div>
+
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">
+                      <i class="fa fa-money" aria-hidden="true"></i>
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    readonly
+                    class="form-control"
+                    value=" {{ user.balance | currency: 'CAD' }}"
+                  />
+                </div>
+
+                <div class="input-group mb-3">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">
+                      <i class="fa fa-calendar" aria-hidden="true"></i>
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    readonly
+                    class="form-control"
+                    value=" {{ user.date | date: 'longDate' }}"
+                  />
+                </div>
+              </div>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="btn btn-danger btn-block" [disabled]="!enableAdd">
+    Add new User
+  </button>
+
+  <h4 *ngIf="!loaded">
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border text-danger mt-3" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+  </h4>
+</div>
+
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="exampleModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger" id="exampleModalLabel">
+          <i class="fa fa-user-circle" aria-hidden="true"></i> Add new user here
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm)">
+          <div class="form-group row">
+            <label for="firstname" class="col-sm-4 col-form-label"
+              >First Name</label
+            >
+            <div class="col-sm-8">
+              <input
+                [(ngModel)]="user.firstName"
+                [ngClass]="{
+                  'is-invalid': userFirstName.errors && userFirstName.touched
+                }"
+                placeholder="Type your first name here"
+                class="form-control"
+                name="firstName"
+                id="firstName"
+                type="text"
+                #userFirstName="ngModel"
+                required
+                minlength="2"
+              />
+
+              <div
+                [hidden]="!userFirstName.errors?.required"
+                class="invalid-feedback"
+              >
+                First name is required
+              </div>
+
+              <div
+                [hidden]="!userFirstName.errors?.minlength"
+                class="invalid-feedback"
+              >
+                Must be at least 2 characters
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="lastname" class="col-sm-4 col-form-label"
+              >Last Name</label
+            >
+            <div class="col-sm-8">
+              <input
+                [(ngModel)]="user.lastName"
+                [ngClass]="{
+                  'is-invalid': userLastName.errors && userLastName.touched
+                }"
+                placeholder="Type your last name here"
+                class="form-control"
+                name="lastName"
+                id="lastName"
+                type="text"
+                #userLastName="ngModel"
+                required
+                minlength="2"
+              />
+
+              <div
+                [hidden]="!userLastName.errors?.required"
+                class="invalid-feedback"
+              >
+                First name is required
+              </div>
+
+              <div
+                [hidden]="!userLastName.errors?.minlength"
+                class="invalid-feedback"
+              >
+                Must be at least 2 characters
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="age" class="col-sm-4 col-form-label">Email</label>
+            <div class="col-sm-8">
+              <input
+                [(ngModel)]="user.email"
+                [ngClass]="{
+                  'is-invalid': userEmail.errors && userEmail.touched
+                }"
+                placeholder="Type your last name here"
+                class="form-control"
+                name="email"
+                id="email"
+                type="email"
+                #userEmail="ngModel"
+                required
+                pattern="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+              />
+
+              <div
+                [hidden]="!userLastName.errors?.required"
+                class="invalid-feedback"
+              >
+                First name is required
+              </div>
+
+              <div
+                [hidden]="!userLastName.errors?.pattern"
+                class="invalid-feedback"
+              >
+                Must be a valid email
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="age" class="col-sm-4 col-form-label">Age</label>
+            <div class="col-sm-8">
+              <input
+                [(ngModel)]="user.age"
+                type="number"
+                class="form-control"
+                id="age"
+                placeholder="Type your age here"
+                name="age"
+              />
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="balance" class="col-sm-4 col-form-label">Balance</label>
+            <div class="col-sm-8">
+              <input
+                [(ngModel)]="user.balance"
+                name="balance"
+                type="number"
+                class="form-control"
+                id="balance"
+                placeholder="Type your balance here"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-danger mt-2 btn-block"
+            [disabled]="!userForm.form.valid"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noUsers>
+  <table class="table table-bordered table-sm m-5" *ngIf="users?.length == 0">
+    <thead>
+      <tr class="table-primary">
+        <th scope="col">First</th>
+        <th scope="col">Last</th>
+        <th scope="col">Age</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="3"><h2>No User</h2></td>
+      </tr>
+    </tbody>
+  </table>
+</ng-template>

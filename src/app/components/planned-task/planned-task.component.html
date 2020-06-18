@@ -1,0 +1,139 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="text-secondary">
+        <i class="fas fa-calendar text-danger"></i> Planned Task
+      </h3>
+    </div>
+
+    <div class="col-md-4">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <button
+            type="button"
+            class="btn btn-outline-warning"
+            *ngIf="input.important"
+          >
+            <i class="fa fa-star" aria-hidden="true"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            *ngIf="!input.important"
+          >
+            <i class="fa fa-star" aria-hidden="true"></i>
+          </button>
+        </div>
+        <input
+          type="date"
+          class="text-danger form-control"
+          data-date-inline-picker="true"
+          [(ngModel)]="input.date"
+        />
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <button
+            type="button"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+            class="btn btn-outline-danger dropdown-toggle"
+          >
+            <i class="fas fa-list"></i>
+          </button>
+          <div class="dropdown-menu">
+            <span class="dropdown-item">
+              <button class="btn btn-light" (click)="markImportant($event)">
+                <i class="fa fa-star text-warning" aria-hidden="true"></i>
+                Important
+              </button>
+            </span>
+          </div>
+        </div>
+        <input
+          type="text"
+          class="form-control"
+          aria-label="Text input with dropdown button"
+          [(ngModel)]="input.content"
+        />
+
+        <div class="input-group-append">
+          <button
+            class="btn btn-danger"
+            type="button"
+            (click)="addTask($event)"
+          >
+            ADD
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading   -->
+    <div class="col-md-12" *ngIf="plans.length == 0">
+      <div class="spinner-grow text-danger" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      <h4 class="text-danger">Click add to make new task...</h4>
+    </div>
+
+    <!-- Uncomplete List   -->
+    <div class="col-md-12" *ngIf="plans.length > 0">
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-danger">
+          <h5>
+            <i class="fa fa-calendar" aria-hidden="true"></i> Planed Tasks
+          </h5>
+        </li>
+
+        <div *ngFor="let item of plans">
+          <li class="list-group-item">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-md-1">
+                  <button
+                    type="button"
+                    class="btn btn-light btn-lg"
+                    *ngIf="item.important"
+                  >
+                    <i class="fa fa-star text-warning" aria-hidden="true"></i>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn btn-light btn-lg"
+                    *ngIf="!item.important"
+                  >
+                    <i class="fa fa-star text-secondary" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <div class="col-md-10">
+                  <h5 class="text-danger">
+                    {{ item.content }}
+                  </h5>
+                  <small>
+                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                    {{ item.date }}
+                  </small>
+                </div>
+                <div class="col-md-1">
+                  <button
+                    class="btn btn-outline-danger"
+                    (click)="deleteTask(item)"
+                  >
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </li>
+        </div>
+      </ul>
+    </div>
+  </div>
+</div>

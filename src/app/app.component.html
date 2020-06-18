@@ -1,0 +1,55 @@
+<app-navbar></app-navbar>
+
+<div class="wrapper">
+  <!-- Sidebar  -->
+  <nav id="sidebar">
+    <button type="button" id="sidebarCollapse" class="btn btn-light">
+      <i class="fa fa-list" aria-hidden="true"></i>
+    </button>
+
+    <ul class="list-unstyled components">
+      <li
+        [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <a routerLink="/"> <i class="fas fa-home mr-1"></i> Home </a>
+      </li>
+
+      <li
+        [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <a routerLink="/daily">
+          <i class="fas fa-calendar-check mr-1"></i> Today
+        </a>
+      </li>
+      <li
+        [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <a routerLink="/important">
+          <i class="fa fa-star mr-1" aria-hidden="true"></i> Important
+        </a>
+      </li>
+      <li
+        [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <a routerLink="/planned">
+          <i class="fa fa-calendar mr-1" aria-hidden="true"></i> Planned
+        </a>
+      </li>
+      <li
+        [routerLinkActive]="['active']"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        <a routerLink="/assign"> <i class="fas fa-users mr-1"></i> Assign </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Page Content  -->
+  <div id="content">
+    <router-outlet></router-outlet>
+  </div>
+</div>

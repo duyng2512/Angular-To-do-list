@@ -1,0 +1,240 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="col-md-12 text-left">
+        <h1 class="text-danger font-weight-light">
+          <i class="fa fa-archive" aria-hidden="true"></i>
+          Posts
+        </h1>
+
+        <button
+          class="btn btn-outline-danger mb-3"
+          data-toggle="modal"
+          data-target="#exampleModalPost"
+          (click)="setEdit()"
+        >
+          <i class="fa fa-plus" aria-hidden="true"></i> Add New Post
+        </button>
+
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="currentIndex == 0"
+            (click)="prevPage($event)"
+          >
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="btn btn-outline-danger">
+            Page :
+            {{ currentIndex }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            (click)="nextPage($event)"
+            [disabled]="currentIndex == 12"
+          >
+            <i class="fa fa-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9 pt-2">
+      <app-new-post [data]="post"></app-new-post>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12 mt-3">
+  <div class="d-flex justify-content-center" *ngIf="!loaded">
+    <div class="spinner-border text-danger mt-3" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+  <div class="accordion" id="accordionExample" *ngIf="loaded">
+    <div *ngFor="let item of currentPost">
+      <div class="card">
+        <div class="card-header" id="headingOne">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-3 text-center">
+                <button
+                  class="btn btn-link text-danger"
+                  type="button"
+                  data-toggle="collapse"
+                  [attr.data-target]="'#' + item.id"
+                  aria-expanded="false"
+                  aria-controls="collapseOne"
+                >
+                  <h3>
+                    {{ "#" + item.id }}
+                  </h3>
+                </button>
+              </div>
+              <div class="col-md-9">
+                <button
+                  class="btn btn-link text-danger text-left"
+                  type="button"
+                  data-toggle="collapse"
+                  [attr.data-target]="'#' + item.id"
+                  aria-expanded="false"
+                  aria-controls="collapseOne"
+                >
+                  {{ item.title }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          [id]="item.id"
+          class="collapse"
+          aria-labelledby="headingOne"
+          data-parent="#accordionExample"
+        >
+          <div class="card-body">
+            {{ item.body }}
+            <hr />
+            <button class="btn btn-outline-danger btn-sm mr-3">
+              <i class="fa fa-trash" aria-hidden="true"></i>
+            </button>
+            <button
+              class="btn btn-danger btn-sm mr-3"
+              (click)="editPost(item)"
+              data-toggle="modal"
+              data-target="#exampleModalPost"
+            >
+              <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+            <button class="btn btn-danger btn-sm">
+              <a
+                routerLink="/post/{{ item.id.slice(2, item.id.length) }}"
+                [style.text-decoration]="'none'"
+                [style.color]="'#fff'"
+              >
+                <i class="fa fa-arrow-right" aria-hidden="true"></i>
+                Show more...
+              </a>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div
+  class="modal fade"
+  id="exampleModalPost"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5
+          class="modal-title text-danger"
+          id="exampleModalLabel"
+          *ngIf="!isEdit"
+        >
+          <i class="fa fa-podcast" aria-hidden="true"></i> Add new post here
+        </h5>
+
+        <h5
+          class="modal-title text-danger"
+          id="exampleModalLabel"
+          *ngIf="isEdit"
+        >
+          <i class="fa fa-pencil" aria-hidden="true"></i> Edit post here
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form #postForm="ngForm" (ngSubmit)="onSubmit(postForm)">
+          <div class="form-group row">
+            <label for="title" class="col-sm-3 col-form-label">Title</label>
+            <div class="col-sm-9">
+              <input
+                [(ngModel)]="post.title"
+                [ngClass]="{
+                  'is-invalid': title.errors && title.touched
+                }"
+                placeholder="Type the title here"
+                class="form-control"
+                name="title"
+                id="title"
+                type="text"
+                #title="ngModel"
+                required
+                minlength="2"
+              />
+
+              <div [hidden]="!title.errors?.required" class="invalid-feedback">
+                Title is required
+              </div>
+
+              <div [hidden]="!title.errors?.minlength" class="invalid-feedback">
+                Must be at least 2 characters
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row">
+            <label for="body" class="col-sm-3 col-form-label">Body</label>
+            <div class="col-sm-9">
+              <textarea
+                [(ngModel)]="post.body"
+                [ngClass]="{
+                  'is-invalid': body.errors && body.touched
+                }"
+                placeholder="Type the body here"
+                class="form-control"
+                name="body"
+                id="body"
+                type="text"
+                #body="ngModel"
+                required
+                rows="3"
+              ></textarea>
+
+              <div [hidden]="!body.errors?.required" class="invalid-feedback">
+                Body is required
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="btn btn-danger btn-block"
+            (click)="addPost(title.value, body.value)"
+            [disabled]="!postForm.form.valid"
+            *ngIf="!isEdit"
+          >
+            Add new post
+          </button>
+
+          <button
+            class="btn btn-outline-danger btn-block"
+            (click)="updatePost()"
+            [disabled]="!postForm.form.valid"
+            *ngIf="isEdit"
+          >
+            Edit new post
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

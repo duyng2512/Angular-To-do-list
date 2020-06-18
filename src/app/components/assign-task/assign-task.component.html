@@ -1,0 +1,895 @@
+<style>
+  .avatar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  .cursor {
+    cursor: pointer;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Title -->
+    <div class="col-md-12 mb-5">
+      <h2 class="text-secondary">
+        <i class="fas fa-user-circle text-danger"></i> Task Assignment
+      </h2>
+    </div>
+
+    <div class="col-md-4">
+      <h3 class="text-danger text-center">
+        <i class="fas fa-user"></i> Members
+      </h3>
+
+      <!-- Loading   -->
+      <div *ngIf="currentMember.length == 0">
+        <div class="spinner-grow text-danger" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <h4 class="text-danger">No users created...</h4>
+      </div>
+
+      <ul class="list-group" *ngIf="currentMember.length > 0">
+        <li class="list-group-item list-group-item-danger">
+          <i class="fas fa-user"></i> Members
+        </li>
+        <span *ngFor="let item of currentMember">
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-md-2">
+                <img [src]="item.avatar" alt="Avatar" class="avatar" />
+              </div>
+
+              <div class="col-md-8">
+                <h5 class="text-danger d-inline">
+                  <b>{{ item.name }} - </b>
+                </h5>
+                <small>
+                  <b class="text-secondary text-sm-left">{{ item.job }}</b>
+                </small>
+
+                <!-- Button trigger modal -->
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  data-toggle="modal"
+                  [attr.data-target]="'#' + 'id' + item.id"
+                  [disabled]="item.tasks.length == 0"
+                  (click)="selectMember($event, item)"
+                >
+                  <i class="fas fa-caret-right"></i> Assigned tasks
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm ml-2"
+                  (click)="delUser($event, item)"
+                >
+                  <i class="fa fa-trash" aria-hidden="true"></i>
+                </button>
+
+                <!-- Modal Member's task -->
+                <div
+                  class="modal fade"
+                  [id]="'id' + item.id"
+                  tabindex="-1"
+                  role="dialog"
+                  aria-hidden="true"
+                >
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h6 class="modal-title">
+                          <i class="fas fa-user"></i> {{ memberInput.name }}`s
+                          tasks | <i class="fas fa-tasks"></i> Total tasks:
+                          {{ memberInput.tasks.length }}
+                        </h6>
+                        <button
+                          type="button"
+                          class="close"
+                          data-dismiss="modal"
+                          aria-label="Close"
+                          (click)="resetInput()"
+                        >
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        <ul class="list-group">
+                          <li class="list-group-item list-group-item-danger">
+                            <i class="fas fa-tasks"></i>
+                            {{ memberInput.name }}`s tasks
+                          </li>
+
+                          <div *ngFor="let task of memberInput.tasks">
+                            <li class="list-group-item">
+                              <div class="row">
+                                <div class="col-md-10">
+                                  {{ task.content }}
+                                </div>
+                                <div class="col-md-2">
+                                  <button
+                                    class="btn btn-outline-danger mr-auto btn-sm"
+                                    (click)="delTask($event, task)"
+                                  >
+                                    <i
+                                      class="fa fa-trash"
+                                      aria-hidden="true"
+                                    ></i>
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          </div>
+                        </ul>
+                      </div>
+                      <div class="modal-footer">
+                        <button
+                          type="button"
+                          class="btn btn-danger"
+                          data-dismiss="modal"
+                          (click)="updateTask($event)"
+                        >
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- End Modal Member's task -->
+              </div>
+
+              <div class="col-md-1">
+                <span class="badge badge-danger badge-pill">
+                  {{ item.tasks.length }}
+                </span>
+              </div>
+            </div>
+          </li>
+        </span>
+
+        <li class="list-group-item list-group-item-danger text-center">
+          <button
+            type="button"
+            class="btn btn-link"
+            [disabled]="minMemberIdx || members.length <= 4"
+            (click)="prevPage($event, 'members')"
+          >
+            <i
+              class="fa fa-arrow-left text-danger fa-lg mr-2 cursor"
+              aria-hidden="true"
+            ></i>
+          </button>
+
+          <button class="btn btn-outline-danger">
+            <i class="fa fa-users" aria-hidden="true"></i>
+            {{ currentMemberIdx + 1 }}/{{ pageMemberMax }}
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-link"
+            [disabled]="maxMemberIdx || members.length <= 4"
+            (click)="nextPage($event, 'members')"
+          >
+            <i
+              class="fa fa-arrow-right text-danger fa-lg ml-2 cursor"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Button and statistical -->
+    <div class="col-md-4 text-center">
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-danger">
+          <h4><i class="fas fa-chart-bar"></i> Tasks stats</h4>
+        </li>
+
+        <li
+          class="list-group-item d-flex justify-content-between align-items-center"
+        >
+          <i class="fas fa-user-friends"></i> Team
+          <span class="badge badge-primary badge-pill">{{ team.length }}</span>
+        </li>
+        <li
+          class="list-group-item d-flex justify-content-between align-items-center"
+        >
+          <i class="fas fa-user-alt"></i> Members
+          <span class="badge badge-primary badge-pill">{{
+            members.length
+          }}</span>
+        </li>
+        <li
+          class="list-group-item d-flex justify-content-between align-items-center"
+        >
+          <i class="fas fa-list-ul"></i> Total tasks
+          <span class="badge badge-primary badge-pill">{{ totalTask }}</span>
+        </li>
+      </ul>
+
+      <button
+        class="btn btn-danger btn-block btn-lg mt-4"
+        data-toggle="modal"
+        data-target="#newTeam"
+      >
+        <i class="fas fa-users"></i> New team
+      </button>
+
+      <!-- Modal new Team  -->
+      <div
+        class="modal fade"
+        id="newTeam"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="newTeam"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title text-danger">
+                <i class="fas fa-users"></i> New team
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+                (click)="resetInput()"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col-md-5 text-left">
+                    <h5 class="text-danger my-auto">
+                      Team members
+                    </h5>
+                  </div>
+                  <div class="col-md-7">
+                    <div class="dropdown">
+                      <button
+                        class="btn btn-danger dropdown-toggle btn-block"
+                        type="button"
+                        id="dropdownMenuButton"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        [disabled]="members.length == 0"
+                      >
+                        Choose team members
+                      </button>
+                      <div
+                        class="dropdown-menu"
+                        aria-labelledby="dropdownMenuButton"
+                      >
+                        <div *ngFor="let item of members">
+                          <div
+                            class="dropdown-item cursor"
+                            (click)="addMemberToTeamInput($event, item)"
+                          >
+                            <div class="row p-2">
+                              <div class="col-md-3">
+                                <img
+                                  [src]="item.avatar"
+                                  alt="Avatar"
+                                  class="avatar"
+                                />
+                              </div>
+                              <div class="col-md-9">
+                                <h6 class="text-dark">
+                                  <b>{{ item.name }}</b>
+                                </h6>
+                                <small class="text-secondary">
+                                  <b>{{ item.job }}</b>
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-5 text-left mt-2">
+                    <h5 class="text-danger my-auto">
+                      Group Name
+                    </h5>
+                  </div>
+                  <div class="col-md-7">
+                    <div class="input-group mb-3 mt-2">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fa fa-users" aria-hidden="true"></i>
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="groupName"
+                        id="groupName"
+                        placeholder="Group name"
+                        [(ngModel)]="teamInput.name"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="col-md-12" *ngIf="teamInput.users.length > 0">
+                    <ul class="list-group">
+                      <li class="list-group-item list-group-item-danger">
+                        <i class="fas fa-user-friends"></i>
+                        Team
+                      </li>
+                      <div *ngFor="let item of teamInput.users">
+                        <li class="list-group-item">
+                          <div class="row">
+                            <div class="col-md-2">
+                              <img [src]="item.avatar" alt="Avatar" />
+                            </div>
+                            <div class="col-md-8">
+                              {{ item.name }}
+                            </div>
+                            <div class="col-md-1">
+                              <button
+                                class="btn btn-outline-danger"
+                                (click)="clearMemberToTeamInput($event, item)"
+                              >
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </li>
+                      </div>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- List of Member -->
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+                (click)="resetInput()"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                (click)="createTeam($event)"
+                [disabled]="
+                  teamInput.name === '' || teamInput.users.length === 0
+                "
+              >
+                Create new Team
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        class="btn btn-danger btn-block btn-lg mt-2"
+        data-toggle="modal"
+        data-target="#newMembers"
+      >
+        <i class="fas fa-user-plus"></i> New members
+      </button>
+
+      <!-- Modal new Member  -->
+      <div
+        class="modal fade"
+        id="newMembers"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="newMembers"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title text-danger">
+                <i class="fas fa-user-plus"></i> New members
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+                (click)="resetInput()"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col-md-3">
+                    Name
+                  </div>
+                  <div class="col-md-9">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text"
+                          ><i class="fa fa-user" aria-hidden="true"></i
+                        ></span>
+                      </div>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Name"
+                        name="name"
+                        id="name"
+                        [(ngModel)]="memberInput.name"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                    Role
+                  </div>
+                  <div class="col-md-9">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fa fa-suitcase" aria-hidden="true"></i
+                        ></span>
+                      </div>
+                      <input
+                        type="text"
+                        class="form-control"
+                        name="role"
+                        id="role"
+                        placeholder="Role"
+                        [(ngModel)]="memberInput.job"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+                (click)="resetInput()"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                (click)="addUser($event)"
+                [disabled]="memberInput.job === '' || memberInput.name === ''"
+              >
+                Add new User
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        class="btn btn-danger btn-block btn-lg mt-2"
+        data-toggle="modal"
+        data-target="#newTaskMembers"
+      >
+        <i class="fas fa-tasks"></i> New task for member
+      </button>
+
+      <!-- Modal new task for member  -->
+      <div
+        class="modal fade"
+        id="newTaskMembers"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="newTaskMembers"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title text-danger">
+                <i class="fas fa-tasks"></i> New task for member
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+                (click)="resetInput()"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-3">
+                  <h5><i class="fas fa-user-edit"></i></h5>
+                  <h5>
+                    Member:
+                  </h5>
+                </div>
+                <div class="col-md-9">
+                  <div class="dropdown">
+                    <button
+                      class="btn btn-danger dropdown-toggle btn-block"
+                      type="button"
+                      id="dropdownMenuButton"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      [disabled]="members.length == 0"
+                    >
+                      Choose team members
+                    </button>
+                    <div
+                      class="dropdown-menu"
+                      aria-labelledby="dropdownMenuButton"
+                    >
+                      <div *ngFor="let item of members">
+                        <div
+                          class="dropdown-item cursor"
+                          (click)="selectMember($event, item)"
+                        >
+                          <div class="row p-2">
+                            <div class="col-md-3">
+                              <img
+                                [src]="item.avatar"
+                                alt="Avatar"
+                                class="avatar"
+                              />
+                            </div>
+                            <div class="col-md-9">
+                              <h6 class="text-dark">
+                                <b>{{ item.name }}</b>
+                              </h6>
+                              <small class="text-secondary">
+                                <b>{{ item.job }}</b>
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-3 mt-4">
+                  <h5><i class="fas fa-tasks"></i></h5>
+                  <h5>
+                    Task:
+                  </h5>
+                </div>
+                <div class="col-md-9 mt-4">
+                  <div class="form-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="task"
+                      id="task"
+                      aria-describedby="helpId"
+                      placeholder="Task content"
+                      [(ngModel)]="taskInput.content"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="col-md-12 mt-2 mb-1"
+                  *ngIf="memberInput.id !== null"
+                >
+                  <div class="row">
+                    <div class="col-md-2">
+                      <img [src]="memberInput.avatar" alt="Avatar" />
+                    </div>
+                    <div class="col-md-10 text-left pt-3">
+                      <h5>
+                        <i class="fa fa-user" aria-hidden="true"></i>
+                        {{ memberInput.name }}
+                      </h5>
+
+                      <span *ngIf="taskInput.content !== ''">
+                        <i class="fas fa-tasks"></i> Assigned Task:
+                        {{ taskInput.content }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+                (click)="resetInput()"
+              >
+                Close
+              </button>
+
+              <button
+                class="btn btn-danger"
+                [disabled]="taskInput.content === '' || memberInput.id === null"
+                (click)="asignTask($event)"
+              >
+                Assign task
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        class="btn btn-danger btn-block btn-lg mt-2"
+        data-toggle="modal"
+        data-target="#newTaskTeam"
+      >
+        <i class="fas fa-calendar-plus"></i> New task for team
+      </button>
+
+      <!-- Modal New task for team  -->
+      <div
+        class="modal fade"
+        id="newTaskTeam"
+        tabindex="-1"
+        role="dialog"
+        aria-labelledby="newTaskTeam"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title text-danger">
+                <i class="fas fa-calendar-plus"></i> New task for team
+              </h5>
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+                (click)="resetInput()"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+
+            <!-- Modal body -->
+
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-3">
+                  <h5>
+                    <i class="fa fa-users" aria-hidden="true"></i>
+                  </h5>
+                  <h5>
+                    Team:
+                  </h5>
+                </div>
+                <div class="col-md-9">
+                  <div class="dropdown">
+                    <button
+                      class="btn btn-danger dropdown-toggle btn-block"
+                      type="button"
+                      id="dropdownMenuButton"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false"
+                      [disabled]="team.length == 0"
+                    >
+                      Choose team
+                    </button>
+                    <div
+                      class="dropdown-menu"
+                      aria-labelledby="dropdownMenuButton"
+                    >
+                      <div *ngFor="let item of team">
+                        <div
+                          class="dropdown-item cursor"
+                          (click)="selectTeam($event, item)"
+                        >
+                          <h6 class="text-dark">
+                            <b>{{ item.name }}</b>
+                          </h6>
+                          <span *ngFor="let member of item.users">
+                            <small class="text-secondary">
+                              <b>{{ member.name }}</b
+                              >,
+                            </small> </span
+                          >...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-3 mt-4">
+                  <h5><i class="fas fa-tasks"></i></h5>
+                  <h5>
+                    Task:
+                  </h5>
+                </div>
+                <div class="col-md-9 mt-4">
+                  <div class="form-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="task"
+                      id="task"
+                      aria-describedby="helpId"
+                      placeholder="Task content"
+                      [(ngModel)]="taskInput.content"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  class="col-md-12 mt-2 mb-1 text-left"
+                  *ngIf="teamInput.id !== null"
+                >
+                  <ul class="list-group">
+                    <li class="list-group-item list-group-item-danger">
+                      <i class="fa fa-users" aria-hidden="true"></i>
+                      Choosed team
+                    </li>
+                    <li class="list-group-item">
+                      <h6 class="text-danger">
+                        <i class="fa fa-users" aria-hidden="true"></i>
+                        {{ teamInput.name }}
+                      </h6>
+                      <small
+                        class="text-secondary"
+                        *ngIf="taskInput.content !== ''"
+                      >
+                        <i class="fas fa-list"></i> {{ taskInput.content }}
+                      </small>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-dismiss="modal"
+                (click)="resetInput()"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                [disabled]="taskInput.content === '' || teamInput.id === null"
+                (click)="asignTaskTeam($event)"
+              >
+                Save changes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Team list -->
+    <div class="col-md-4">
+      <h3 class="text-danger text-center">
+        <i class="fas fa-user-friends"></i> Team
+      </h3>
+
+      <div *ngIf="currentTeam.length == 0">
+        <div class="spinner-grow text-danger" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <h4 class="text-danger">No Team created...</h4>
+      </div>
+
+      <ul class="list-group" *ngIf="currentTeam.length > 0">
+        <li class="list-group-item list-group-item-danger">
+          <i class="fas fa-user-friends"></i> Team list
+        </li>
+        <span *ngFor="let item of currentTeam">
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-md-8">
+                <h5 class="text-danger">
+                  {{ item.name }}
+                </h5>
+                <span *ngFor="let member of item.users">
+                  <small>{{ member.name }} ,</small>
+                </span>
+                <small>
+                  ...
+                </small>
+              </div>
+
+              <div class="col-md-4 text-left">
+                <div class="dropdown">
+                  <button
+                    class="btn btn-danger btn-sm dropdown-toggle d-inline"
+                    type="button"
+                    id="dropdownMenuButton"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    [disabled]="item.tasks.length === 0"
+                  ></button>
+
+                  <button
+                    class="btn btn-outline-secondary btn-sm d-inline ml-1"
+                    (click)="delTeam($event, item)"
+                  >
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                  </button>
+
+                  <span class="badge badge-secondary badge-pill">
+                    Total {{ item.tasks.length }}
+                  </span>
+                  <div
+                    class="dropdown-menu"
+                    aria-labelledby="dropdownMenuButton"
+                  >
+                    <div *ngFor="let task of item.tasks">
+                      <span class="dropdown-item text-dark">
+                        <i
+                          class="fa fa-arrow-right text-danger"
+                          aria-hidden="true"
+                        ></i>
+                        {{ task.content }}</span
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        </span>
+
+        <li class="list-group-item list-group-item-danger text-center">
+          <button
+            type="button"
+            class="btn btn-link"
+            [disabled]="minTeamIdx || team.length <= 4"
+            (click)="prevPage($event, 'team')"
+          >
+            <i
+              class="fa fa-arrow-left text-danger fa-lg mr-2 cursor"
+              aria-hidden="true"
+            ></i>
+          </button>
+
+          <button class="btn btn-outline-danger">
+            <i class="fas fa-user-friends"></i>
+            {{ currentTeamIdx + 1 }}/{{ pageTeamMax }}
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-link"
+            [disabled]="maxTeamIdx || team.length <= 4"
+            (click)="nextPage($event, 'team')"
+          >
+            <i
+              class="fa fa-arrow-right text-danger fa-lg ml-2 cursor"
+              aria-hidden="true"
+            ></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

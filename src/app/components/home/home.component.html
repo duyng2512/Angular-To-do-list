@@ -1,0 +1,1213 @@
+<style>
+  .nav-cursor {
+    cursor: pointer;
+  }
+  .task-list {
+    overflow: auto;
+    height: 70vh;
+  }
+  .members-task-list-container {
+    border-left: #868e96 2px solid;
+  }
+
+  .members-task-list {
+    list-style-type: square;
+  }
+
+  .members-task-list li::before {
+    color: #868e96;
+    font-weight: bold;
+    display: inline-block;
+  }
+
+  .members-list {
+    overflow: auto;
+    height: 100vh;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  .chart-wrap {
+    margin-left: 50px;
+    font-family: sans-serif;
+    height: 650px;
+    width: 300px;
+  }
+  .chart-wrap .title {
+    font-weight: bold;
+    font-size: 1.62em;
+    padding: 0.5em 0 1.8em 0;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .chart-wrap.vertical .grid {
+    transform: translateY(-175px) translateX(175px) rotate(-90deg);
+  }
+  .chart-wrap.vertical .grid .bar::after {
+    transform: translateY(-50%) rotate(45deg);
+    display: block;
+  }
+  .chart-wrap.vertical .grid::before,
+  .chart-wrap.vertical .grid::after {
+    transform: translateX(-0.2em) rotate(90deg);
+  }
+  .chart-wrap .grid {
+    position: relative;
+    padding: 5px 0 5px 0;
+    height: 100%;
+    width: 100%;
+    border-left: 2px solid #aaa;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 19.5%,
+      rgba(170, 170, 170, 0.7) 20%
+    );
+  }
+  .chart-wrap .grid::before {
+    font-size: 0.8em;
+    font-weight: bold;
+    content: "0%";
+    position: absolute;
+    left: -0.5em;
+    top: -1.5em;
+  }
+  .chart-wrap .grid::after {
+    font-size: 0.8em;
+    font-weight: bold;
+    content: "100%";
+    position: absolute;
+    right: -1.5em;
+    top: -1.5em;
+  }
+  .chart-wrap .bar {
+    width: var(--bar-value);
+    height: 50px;
+    margin: 30px 0;
+    background-color: #ff0039;
+    border-radius: 0 3px 3px 0;
+  }
+  .chart-wrap .bar:hover {
+    opacity: 0.6;
+  }
+  .chart-wrap .bar::after {
+    content: attr(data-name);
+    margin-left: 100%;
+    padding: 10px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12 p-5">
+      <div class="mr-auto">
+        <h3 class="my-2">
+          <i class="fa fa-home text-danger" aria-hidden="true"></i> Home
+        </h3>
+      </div>
+
+      <ul class="nav nav-tabs">
+        <li class="nav-item nav-cursor" (click)="toogleTab($event, 'daily')">
+          <span class="nav-link text-danger" [ngClass]="{ active: tab.daily }">
+            <i class="fas fa-lightbulb"></i>
+            Daily</span
+          >
+        </li>
+        <li
+          class="nav-item nav-cursor"
+          (click)="toogleTab($event, 'important')"
+        >
+          <span
+            class="nav-link text-danger"
+            [ngClass]="{ active: tab.important }"
+          >
+            <i class="fa fa-star" aria-hidden="true"></i>
+            Important</span
+          >
+        </li>
+        <li class="nav-item nav-cursor" (click)="toogleTab($event, 'planned')">
+          <span
+            class="nav-link text-danger"
+            [ngClass]="{ active: tab.planned }"
+          >
+            <i class="fa fa-calendar" aria-hidden="true"></i>
+            Planned</span
+          >
+        </li>
+        <li class="nav-item nav-cursor" (click)="toogleTab($event, 'assign')">
+          <span class="nav-link text-danger" [ngClass]="{ active: tab.assign }">
+            <i class="fas fa-users"></i>
+            Assign</span
+          >
+        </li>
+      </ul>
+
+      <!-- MAIN CONTENT -->
+      <!-- DAILY  -->
+      <div *ngIf="tab.daily">
+        <div class="row">
+          <div class="col-md-10">
+            <div class="input-group mt-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                aria-label="Default"
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="filterSearch()"
+              />
+              <div class="input-group-append">
+                <button
+                  class="btn btn-danger"
+                  data-toggle="collapse"
+                  data-target="#daily"
+                  aria-expanded="false"
+                  aria-controls="daily"
+                >
+                  <i class="fas fa-filter"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="collapse" id="daily">
+              <div class="card card-body">
+                <div class="row">
+                  <div class="col-md-3">
+                    <ul class="list-group text-center">
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.important == true"
+                        >
+                          <i
+                            class="fa fa-star text-warning mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Important
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.important == false"
+                          (click)="toogleFilter($event, 'important')"
+                        >
+                          <i
+                            class="fa fa-star text-secondary mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Important
+                          </span>
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.repeat == false"
+                          (click)="toogleFilter($event, 'repeat')"
+                        >
+                          <i
+                            class="fa fa-undo text-secondary mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Repeat
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.repeat == true"
+                        >
+                          <i
+                            class="fa fa-undo text-danger mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Repeat
+                          </span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="col-md-3">
+                    <ul class="list-group text-center">
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.complete == true"
+                        >
+                          <i class="fas fa-check text-danger mr-2"></i>
+                          <span class="text-danger">
+                            Complete
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.complete == false"
+                          (click)="toogleFilter($event, 'complete')"
+                        >
+                          <i class="fas fa-check text-secondary mr-2"></i>
+                          <span class="text-danger">
+                            Complete
+                          </span>
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.dueDate == false"
+                          (click)="toogleFilter($event, 'dueDate')"
+                        >
+                          <i class="fas fa-calendar text-secondary mr-2"></i>
+                          <span class="text-danger">
+                            Due Date
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.dueDate == true"
+                        >
+                          <i class="fas fa-calendar text-danger mr-2"></i>
+                          <span class="text-danger">
+                            Due Date
+                          </span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="col-md-6">
+                    <ul class="list-group">
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-outline-primary mr-1 btn-sm"
+                          *ngIf="!category.primary"
+                          (click)="toogleCategory($event, 'primary')"
+                        >
+                          <i class="fas fa-tasks"></i>
+                          Primary
+                        </button>
+
+                        <button
+                          class="btn btn-primary mr-1 btn-sm"
+                          *ngIf="category.primary"
+                        >
+                          <i class="fas fa-tasks"></i>
+                          Primary
+                        </button>
+
+                        <button
+                          class="btn btn-outline-secondary mr-1 btn-sm"
+                          *ngIf="!category.secondary"
+                          (click)="toogleCategory($event, 'secondary')"
+                        >
+                          <i class="fas fa-magnet"></i>
+                          Secondary
+                        </button>
+
+                        <button
+                          class="btn btn-secondary mr-1 btn-sm"
+                          *ngIf="category.secondary"
+                        >
+                          <i class="fas fa-magnet"></i>
+                          Secondary
+                        </button>
+
+                        <button
+                          class="btn btn-outline-danger mr-1 btn-sm"
+                          *ngIf="!category.danger"
+                          (click)="toogleCategory($event, 'danger')"
+                        >
+                          <i class="fas fa-exclamation-circle"></i>
+                          Danger
+                        </button>
+
+                        <button
+                          class="btn btn-danger mr-1 btn-sm"
+                          *ngIf="category.danger"
+                        >
+                          <i class="fas fa-exclamation-circle"></i>
+                          Danger
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-outline-success mr-1 btn-sm"
+                          *ngIf="!category.success"
+                          (click)="toogleCategory($event, 'success')"
+                        >
+                          <i class="fas fa-check-circle"></i>
+                          Success
+                        </button>
+
+                        <button
+                          class="btn btn-success mr-1 btn-sm"
+                          *ngIf="category.success"
+                        >
+                          <i class="fas fa-check-circle"></i>
+                          Success
+                        </button>
+
+                        <button
+                          class="btn btn-outline-warning mr-1 btn-sm"
+                          *ngIf="!category.warning"
+                          (click)="toogleCategory($event, 'warning')"
+                        >
+                          <i class="fas fa-exclamation-triangle"></i>
+                          Warning
+                        </button>
+
+                        <button
+                          class="btn btn-warning mr-1 btn-sm"
+                          *ngIf="category.warning"
+                        >
+                          <i class="fas fa-exclamation-triangle"></i>
+                          Warning
+                        </button>
+
+                        <button
+                          class="btn btn-outline-info mr-1 btn-sm"
+                          *ngIf="!category.information"
+                          (click)="toogleCategory($event, 'information')"
+                        >
+                          <i class="fa fa-info" aria-hidden="true"></i>
+                          Information
+                        </button>
+
+                        <button
+                          class="btn btn-info mr-1 btn-sm"
+                          *ngIf="category.information"
+                        >
+                          <i class="fa fa-info" aria-hidden="true"></i>
+                          Information
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-secondary btn-block"
+                          (click)="clearFilter($event)"
+                        >
+                          <i class="fa fa-trash" aria-hidden="true"></i>
+                          Clear All
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2"></div>
+
+          <!-- THE TABLE -->
+          <div class="col-md-10 mt-4">
+            <ul class="list-group">
+              <li class="list-group-item list-group-item-danger">
+                <h5>
+                  <i class="fas fa-tasks"></i>
+                  Daily tasks's list
+                </h5>
+
+                <h6>
+                  {{ time | date: "MMM d, y, h:mm:ss a" }}
+                </h6>
+              </li>
+              <div class="task-list">
+                <div *ngIf="currentDaily.length == 0">
+                  <div class="spinner-grow text-danger mt-2" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <h4 class="text-danger">No tasks here...</h4>
+                </div>
+
+                <div *ngFor="let item of currentDaily">
+                  <li class="list-group-item">
+                    <div class="row">
+                      <!-- Star -->
+                      <div class="col-md-1 text-right">
+                        <button
+                          class="btn btn-light text-warning"
+                          *ngIf="item.important"
+                        >
+                          <i class="fas fa-star"></i>
+                        </button>
+
+                        <button
+                          class="btn btn-light text-secondary"
+                          *ngIf="!item.important"
+                        >
+                          <i class="fas fa-star"></i>
+                        </button>
+                      </div>
+
+                      <!-- Checkbox complete -->
+                      <div class="col-md-10 text-left">
+                        <h4
+                          class="text-danger my-auto task-item"
+                          (click)="select(item)"
+                          *ngIf="!item.complete"
+                        >
+                          {{ item.content }}
+                        </h4>
+
+                        <h4
+                          class="text-secondary my-auto task-item"
+                          (click)="select(item)"
+                          *ngIf="item.complete"
+                          [ngStyle]="{
+                            'text-decoration': 'line-through'
+                          }"
+                        >
+                          <i
+                            class="fa fa-check mr-2 font-weight-light"
+                            aria-hidden="true"
+                          ></i>
+                        {{ item.content }}
+                        </h4>
+
+                        <small *ngIf="item.repeat" class="text-danger mr-1">
+                          <i class="fas fa-undo-alt"></i> Repeat
+                        </small>
+
+                        <small *ngIf="item.dueDate" class="text-danger mr-1">
+                          <i class="fa fa-calendar" aria-hidden="true"></i>
+                          {{ item.dueDate }}
+                        </small>
+
+                        <div>
+                          <span *ngFor="let item of item.category">
+                            <small [innerHTML]="getCategory(item)"> </small>
+                          </span>
+                        </div>
+                      </div>
+
+                    
+                    </div>
+                  </li>
+                </div>
+              </div>
+            </ul>
+          </div>
+          <div class="col-md-2"></div>
+        </div>
+      </div>
+
+      <!-- IMPORTANT  -->
+      <div *ngIf="tab.important">
+        <div class="row">
+          <div class="col-md-10">
+            <div class="input-group mt-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                aria-label="Default"
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="filterSearch()"
+              />
+              <div class="input-group-append">
+                <button
+                  class="btn btn-danger"
+                  data-toggle="collapse"
+                  data-target="#daily"
+                  aria-expanded="false"
+                  aria-controls="daily"
+                >
+                  <i class="fas fa-filter"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="collapse" id="daily">
+              <div class="card card-body">
+                <div class="row">
+                  <div class="col-md-3">
+                    <ul class="list-group text-center">
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.important == true"
+                        >
+                          <i
+                            class="fa fa-star text-warning mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Important
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.important == false"
+                          (click)="toogleFilter($event, 'important')"
+                        >
+                          <i
+                            class="fa fa-star text-secondary mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Important
+                          </span>
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.repeat == false"
+                          (click)="toogleFilter($event, 'repeat')"
+                        >
+                          <i
+                            class="fa fa-undo text-secondary mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Repeat
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.repeat == true"
+                        >
+                          <i
+                            class="fa fa-undo text-danger mr-2"
+                            aria-hidden="true"
+                          ></i>
+                          <span class="text-danger">
+                            Repeat
+                          </span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="col-md-3">
+                    <ul class="list-group text-center">
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.complete == true"
+                        >
+                          <i class="fas fa-check text-danger mr-2"></i>
+                          <span class="text-danger">
+                            Complete
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.complete == false"
+                          (click)="toogleFilter($event, 'complete')"
+                        >
+                          <i class="fas fa-check text-secondary mr-2"></i>
+                          <span class="text-danger">
+                            Complete
+                          </span>
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.dueDate == false"
+                          (click)="toogleFilter($event, 'dueDate')"
+                        >
+                          <i class="fas fa-calendar text-secondary mr-2"></i>
+                          <span class="text-danger">
+                            Due Date
+                          </span>
+                        </button>
+
+                        <button
+                          class="btn btn-light"
+                          *ngIf="filter.dueDate == true"
+                        >
+                          <i class="fas fa-calendar text-danger mr-2"></i>
+                          <span class="text-danger">
+                            Due Date
+                          </span>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div class="col-md-6">
+                    <ul class="list-group">
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-outline-primary mr-1 btn-sm"
+                          *ngIf="!category.primary"
+                          (click)="toogleCategory($event, 'primary')"
+                        >
+                          <i class="fas fa-tasks"></i>
+                          Primary
+                        </button>
+
+                        <button
+                          class="btn btn-primary mr-1 btn-sm"
+                          *ngIf="category.primary"
+                        >
+                          <i class="fas fa-tasks"></i>
+                          Primary
+                        </button>
+
+                        <button
+                          class="btn btn-outline-secondary mr-1 btn-sm"
+                          *ngIf="!category.secondary"
+                          (click)="toogleCategory($event, 'secondary')"
+                        >
+                          <i class="fas fa-magnet"></i>
+                          Secondary
+                        </button>
+
+                        <button
+                          class="btn btn-secondary mr-1 btn-sm"
+                          *ngIf="category.secondary"
+                        >
+                          <i class="fas fa-magnet"></i>
+                          Secondary
+                        </button>
+
+                        <button
+                          class="btn btn-outline-danger mr-1 btn-sm"
+                          *ngIf="!category.danger"
+                          (click)="toogleCategory($event, 'danger')"
+                        >
+                          <i class="fas fa-exclamation-circle"></i>
+                          Danger
+                        </button>
+
+                        <button
+                          class="btn btn-danger mr-1 btn-sm"
+                          *ngIf="category.danger"
+                        >
+                          <i class="fas fa-exclamation-circle"></i>
+                          Danger
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-outline-success mr-1 btn-sm"
+                          *ngIf="!category.success"
+                          (click)="toogleCategory($event, 'success')"
+                        >
+                          <i class="fas fa-check-circle"></i>
+                          Success
+                        </button>
+
+                        <button
+                          class="btn btn-success mr-1 btn-sm"
+                          *ngIf="category.success"
+                        >
+                          <i class="fas fa-check-circle"></i>
+                          Success
+                        </button>
+
+                        <button
+                          class="btn btn-outline-warning mr-1 btn-sm"
+                          *ngIf="!category.warning"
+                          (click)="toogleCategory($event, 'warning')"
+                        >
+                          <i class="fas fa-exclamation-triangle"></i>
+                          Warning
+                        </button>
+
+                        <button
+                          class="btn btn-warning mr-1 btn-sm"
+                          *ngIf="category.warning"
+                        >
+                          <i class="fas fa-exclamation-triangle"></i>
+                          Warning
+                        </button>
+
+                        <button
+                          class="btn btn-outline-info mr-1 btn-sm"
+                          *ngIf="!category.information"
+                          (click)="toogleCategory($event, 'information')"
+                        >
+                          <i class="fa fa-info" aria-hidden="true"></i>
+                          Information
+                        </button>
+
+                        <button
+                          class="btn btn-info mr-1 btn-sm"
+                          *ngIf="category.information"
+                        >
+                          <i class="fa fa-info" aria-hidden="true"></i>
+                          Information
+                        </button>
+                      </li>
+                      <li class="list-group-item">
+                        <button
+                          class="btn btn-secondary btn-block"
+                          (click)="clearFilter($event)"
+                        >
+                          <i class="fa fa-trash" aria-hidden="true"></i>
+                          Clear All
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2"></div>
+
+          <!-- THE TABLE -->
+          <div class="col-md-10 mt-4">
+            <ul class="list-group">
+              <li class="list-group-item list-group-item-danger">
+                <h5>
+                  <i class="fas fa-star"></i>
+                  Important Task
+                </h5>
+              </li>
+              <div class="task-list">
+                <div *ngIf="currentImportant.length == 0">
+                  <div class="spinner-grow text-danger mt-2" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <h4 class="text-danger">No tasks here...</h4>
+                </div>
+
+                <div *ngFor="let item of currentImportant">
+                  <li class="list-group-item">
+                    <div class="row">
+                      <!-- Star -->
+                      <div class="col-md-1 text-right">
+                        <button
+                          class="btn btn-light text-warning"
+                          *ngIf="item.important"
+                        >
+                          <i class="fas fa-star"></i>
+                        </button>
+
+                        <button
+                          class="btn btn-light text-secondary"
+                          *ngIf="!item.important"
+                        >
+                          <i class="fas fa-star"></i>
+                        </button>
+                      </div>
+
+                      <!-- Checkbox complete -->
+                      <div class="col-md-10 text-left">
+                        <h4
+                          class="text-danger my-auto task-item"
+                          (click)="select(item)"
+                          *ngIf="!item.complete"
+                        >
+                          {{ item.content }}
+                        </h4>
+
+                        <h4
+                          class="text-secondary my-auto task-item"
+                          (click)="select(item)"
+                          *ngIf="item.complete"
+                          [ngStyle]="{
+                            'text-decoration': 'line-through'
+                          }"
+                        >
+                          <i
+                            class="fa fa-check mr-2 font-weight-light"
+                            aria-hidden="true"
+                          ></i>
+                          {{ item.content }}
+                        </h4>
+
+                        <small *ngIf="item.repeat" class="text-danger mr-1">
+                          <i class="fas fa-undo-alt"></i> Repeat
+                        </small>
+
+                        <small *ngIf="item.dueDate" class="text-danger mr-1">
+                          <i class="fa fa-calendar" aria-hidden="true"></i>
+                          {{ item.dueDate }}
+                        </small>
+
+                        <div>
+                          <span *ngFor="let item of item.category">
+                            <small [innerHTML]="getCategory(item)"> </small>
+                          </span>
+                        </div>
+                      </div>
+
+                    
+                    </div>
+                  </li>
+                </div>
+              </div>
+            </ul>
+          </div>
+          <div class="col-md-2"></div>
+        </div>
+      </div>
+
+      <!-- PLANNED  -->
+      <div *ngIf="tab.planned">
+        <div class="row">
+          <div class="col-md-10">
+            <div class="input-group mt-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </span>
+              </div>
+              <input
+                type="text"
+                class="form-control"
+                aria-label="Default"
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="filterSearch()"
+              />
+              <div class="input-group-append">
+                <button
+                  class="btn btn-danger"
+                  *ngIf="sort"
+                  (click)="toogleSort($event)"
+                >
+                  <i class="fas fa-sort-amount-down"></i>
+                </button>
+
+                <button
+                  class="btn btn-danger"
+                  *ngIf="!sort"
+                  (click)="toogleSort($event)"
+                >
+                  <i class="fas fa-sort-amount-up"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2"></div>
+
+          <!-- THE TABLE -->
+          <div class="col-md-10 mt-4">
+            <ul class="list-group">
+              <li class="list-group-item list-group-item-danger">
+                <h5>
+                  <i class="fas fa-calendar"></i>
+                  Planned tasks's list
+                </h5>
+              </li>
+              <div class="task-list">
+                <div *ngIf="currentDaily.length == 0">
+                  <div class="spinner-grow text-danger mt-2" role="status">
+                    <span class="sr-only">Loading...</span>
+                  </div>
+                  <h4 class="text-danger">No tasks here...</h4>
+                </div>
+
+                <div *ngFor="let item of currentPlan">
+                  <li class="list-group-item">
+                    <div class="row">
+                      <!-- Star -->
+                      <div class="col-md-1 text-right">
+                        <button
+                          class="btn btn-light text-warning"
+                          *ngIf="item.important"
+                        >
+                          <i class="fas fa-star"></i>
+                        </button>
+
+                        <button
+                          class="btn btn-light text-secondary"
+                          *ngIf="!item.important"
+                        >
+                          <i class="fas fa-star"></i>
+                        </button>
+                      </div>
+
+                      <!-- Checkbox complete -->
+                      <div class="col-md-10 text-left">
+                        <h4
+                          class="text-danger my-auto task-item"
+                          (click)="select(item)"
+                          *ngIf="!item.complete"
+                        >
+                          {{ item.content }}
+                        </h4>
+
+                        <h4
+                          class="text-secondary my-auto task-item"
+                          (click)="select(item)"
+                          *ngIf="item.complete"
+                          [ngStyle]="{
+                            'text-decoration': 'line-through'
+                          }"
+                        >
+                          <i
+                            class="fa fa-check mr-2 font-weight-light"
+                            aria-hidden="true"
+                          ></i>
+                          {{ item.content }}
+                        </h4>
+
+                        <h6 *ngIf="item.date" class="text-secondary mt-2">
+                          <i class="fa fa-calendar" aria-hidden="true"></i>
+                          {{ item.date | date }}
+                        </h6>
+                      </div>
+
+                    
+                    </div>
+                  </li>
+                </div>
+              </div>
+            </ul>
+          </div>
+          <div class="col-md-2"></div>
+        </div>
+      </div>
+
+      <!-- ASSIGN  -->
+      <div *ngIf="tab.assign">
+        <ul class="list-group mt-2">
+          <li class="list-group-item list-group-item-danger">
+            <h3 class="text-danger">
+              <i class="fas fa-users"></i> Assigned Tasks
+            </h3>
+          </li>
+          <li class="list-group-item">
+            <div class="container-fluid">
+              <div class="row">
+                <!-- BUTTON -->
+                <div class="col-md-2">
+                  <ul class="nav flex-column">
+                    <li class="nav-item">
+                      <button
+                        class="btn btn-light btn-block"
+                        (click)="toogleAssignTab($event, 'members')"
+                      >
+                        <i class="fas fa-user-alt"></i> Members
+                      </button>
+                    </li>
+                    <li class="nav-item">
+                      <button
+                        class="btn btn-light btn-block"
+                        (click)="toogleAssignTab($event, 'teams')"
+                      >
+                        <i class="fas fa-users"></i> Teams
+                      </button>
+                    </li>
+                    <li class="nav-item">
+                      <button
+                        class="btn btn-light btn-block"
+                        (click)="toogleAssignTab($event, 'stats')"
+                      >
+                        <i class="fas fa-chart-bar"></i> Stats
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- MAIN CONTENT MEMBERS-->
+                <div class="col-md-10" *ngIf="assignTab.members">
+                  <ul class="list-group">
+                    <li class="list-group-item list-group-item-secondary">
+                      <h4><i class="fas fa-user-alt"></i> Members</h4>
+                    </li>
+                    <li class="list-group-item" *ngIf="members.length == 0">
+                      <div
+                        class="spinner-grow text-secondary mt-2"
+                        role="status"
+                      >
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                      <h4 class="text-secondary">Nothing here...</h4>
+                    </li>
+
+                    <span *ngFor="let item of members">
+                      <li class="list-group-item">
+                        <div class="row">
+                          <div class="col-md-2">
+                            <img [src]="item.avatar" alt="avatar" />
+                          </div>
+
+                          <div class="col-md-10">
+                            <h6>
+                              <i class="fas fa-user-alt"></i> {{ item.name }}
+                            </h6>
+                            <h6>
+                              <i class="fas fa-suitcase"></i> {{ item.job }}
+                            </h6>
+                            <h6><i class="fas fa-list"></i> Assigned tasks:</h6>
+                            <div class="pl-2" *ngIf="item.tasks.length > 0">
+                              <div class="members-task-list-container">
+                                <ul class="members-task-list">
+                                  <div *ngFor="let task of item.tasks">
+                                    <li>{{ task.content }}</li>
+                                  </div>
+                                </ul>
+                              </div>
+                            </div>
+
+                            <div class="pl-2" *ngIf="item.tasks.length == 0">
+                              <div class="members-task-list-container">
+                                <small class="pl-1">
+                                  No tasks assigned to this members
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    </span>
+                  </ul>
+                </div>
+
+                <!-- MAIN CONTENT TEAM-->
+                <div class="col-md-10" *ngIf="assignTab.teams">
+                  <ul class="list-group">
+                    <li class="list-group-item list-group-item-secondary">
+                      <h4><i class="fas fa-users"></i> Teams</h4>
+                    </li>
+
+                    <li class="list-group-item" *ngIf="teams.length == 0">
+                      <div
+                        class="spinner-grow text-secondary mt-2"
+                        role="status"
+                      >
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                      <h4 class="text-secondary">Nothing here...</h4>
+                    </li>
+
+                    <span *ngFor="let item of teams">
+                      <li class="list-group-item">
+                        <div class="row">
+                          <div class="col-md-12">
+                            <h6>
+                              <i class="fas fa-users"></i> {{ item.name }}
+                            </h6>
+                            <h6><i class="fas fa-list"></i> Assigned tasks:</h6>
+                            <div class="pl-2" *ngIf="item.tasks.length > 0">
+                              <div class="members-task-list-container">
+                                <ul class="members-task-list">
+                                  <div *ngFor="let task of item.tasks">
+                                    <li>{{ task.content }}</li>
+                                  </div>
+                                </ul>
+                              </div>
+                            </div>
+
+                            <div class="pl-2" *ngIf="item.tasks.length == 0">
+                              <div class="members-task-list-container">
+                                <small class="pl-1">
+                                  No tasks assigned to this team
+                                </small>
+                              </div>
+                            </div>
+
+                            <h6>
+                              <i class="fas fa-user-alt mt-1"></i> Team's
+                              members:
+                            </h6>
+
+                            <div class="pl-2" *ngIf="item.users.length > 0">
+                              <div class="members-task-list-container">
+                                <ul class="members-task-list">
+                                  <div *ngFor="let each of item.users">
+                                    <li>{{ each.name }}</li>
+                                  </div>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    </span>
+                  </ul>
+                </div>
+
+                <!-- MAIN CONTENT stats-->
+                <div class="col-md-10" *ngIf="assignTab.stats">
+                  <ul class="list-group members-list">
+                    <li class="list-group-item list-group-item-secondary">
+                      <h4><i class="fas fa-chart-bar"></i> Stats</h4>
+                    </li>
+
+                    <li
+                      class="list-group-item"
+                      *ngIf="teams.length == 0 && members.length == 0"
+                    >
+                      <div
+                        class="spinner-grow text-secondary mt-2"
+                        role="status"
+                      >
+                        <span class="sr-only">Loading...</span>
+                      </div>
+                      <h4 class="text-secondary">Nothing here...</h4>
+                    </li>
+
+                    <li class="list-group-item" *ngIf="members.length > 0">
+                      <dl>
+                        <dt>
+                          Tasks distribution among member
+                        </dt>
+
+                        <div *ngFor="let item of memberStat">
+                          <dd [ngClass]="item.class">
+                            <span class="text">{{ item.ystick }}</span>
+                          </dd>
+                        </div>
+                      </dl>
+                    </li>
+
+                    <li class="list-group-item" *ngIf="teams.length > 0">
+                      <dl>
+                        <dt>
+                          Tasks distribution among teams
+                        </dt>
+
+                        <div *ngFor="let item of teamStat">
+                          <dd [ngClass]="item.class">
+                            <span class="text">{{ item.ystick }}</span>
+                          </dd>
+                        </div>
+                      </dl>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

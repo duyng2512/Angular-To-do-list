@@ -1,0 +1,65 @@
+<div class="container mt-4 mb-4" *ngIf="!loaded">
+  <div class="d-flex justify-content-center">
+    <div class="spinner-border text-danger spinner" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-4 mb-4" *ngIf="loaded">
+  <div class="header clearfix">
+    <h2 class="text-danger">
+      <i class="fa fa-pencil" aria-hidden="true"></i>
+      To do list
+    </h2>
+  </div>
+
+  <div class="jumbotron">
+    <h5 class="display-3">{{ post.id }}</h5>
+    <h5 class="display-4">{{ post.title }}</h5>
+    <p class="lead">
+      {{ post.body }}
+    </p>
+    <p>
+      <button
+        class="btn btn-lg btn-danger mr-3"
+        [routerLink]="['/']"
+        routerLinkActive="router-link-active"
+        role="button"
+      >
+        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        Back
+      </button>
+
+      <button class="btn btn-lg btn-danger" role="button">
+        <i class="fa fa-heart" aria-hidden="true"></i>
+        Like
+      </button>
+    </p>
+  </div>
+
+  <div class="row marketing">
+    <div class="col-lg-6">
+      <h1 class="text-danger">
+        <i class="fa fa-address-book-o" aria-hidden="true"></i>
+        Subheading 1
+      </h1>
+      <h3>
+        Donec id elit non mi porta gravida at eget metus. Maecenas faucibus
+        mollis interdum.
+      </h3>
+    </div>
+
+    <div class="col-lg-6">
+      <h1 class="text-danger">
+        <i class="fa fa-ambulance" aria-hidden="true"></i>
+        Subheading 2
+      </h1>
+      <h3>
+        Donec id elit non mi porta gravida at eget metus. Maecenas faucibus
+        mollis interdum.
+      </h3>
+    </div>
+  </div>
+</div>
+<!-- /container -->

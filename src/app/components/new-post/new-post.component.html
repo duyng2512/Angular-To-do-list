@@ -1,0 +1,21 @@
+<div class="col-md-12">
+  <h5 class="text-danger font-weight-light">
+    <i class="fa fa-history" aria-hidden="true"></i>
+    Recent Post
+  </h5>
+</div>
+
+<div class="col-md-12 mt-1">
+  <h4 class="text-danger font-weight-light" *ngIf="!data.id">
+    Nothing to show here ...
+  </h4>
+  <div class="card" *ngIf="data.id">
+    <div class="card-header">
+      <b># {{ data.id }}</b>
+    </div>
+    <div class="card-body">
+      <h4 class="card-title inline">{{ data.title }}</h4>
+      <p class="card-text">{{ data.body }}</p>
+    </div>
+  </div>
+</div>

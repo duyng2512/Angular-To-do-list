@@ -1,0 +1,488 @@
+<style>
+  .task-item {
+    cursor: pointer;
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Task and day -->
+    <div class="col-md-6">
+      <div class="mr-auto">
+        <h3 class="mt-1"><i class="fas fa-calendar-alt"></i> Daily Task</h3>
+        <h6 class="mt-1">
+          {{ time | date: "short" }}
+        </h6>
+      </div>
+    </div>
+
+    <!-- Button  -->
+    <div class="col-md-12">
+      <form #taskForm="ngForm">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">
+              <b><i class="fa fa-plus" aria-hidden="true"></i></b>
+            </span>
+          </div>
+          <input
+            [(ngModel)]="taskInput.content"
+            [ngClass]="{
+              'is-invalid': content.errors && content.touched
+            }"
+            type="text"
+            class="form-control"
+            aria-label="Amount (to the nearest dollar)"
+            name="content"
+            id="content"
+            #content="ngModel"
+            required
+          />
+
+          <div class="input-group-append">
+            <button
+              class="btn btn-danger"
+              [disabled]="!taskForm.form.valid"
+              (click)="addTask($event)"
+            >
+              ADD
+            </button>
+          </div>
+
+          <div [hidden]="!content.errors?.required" class="invalid-feedback">
+            You have to add some thing
+            <i class="fas fa-smile"></i>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading   -->
+    <div class="col-md-12" *ngIf="tasks.length == 0">
+      <div class="spinner-grow text-danger" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      <h4 class="text-danger">Click add to make new task...</h4>
+    </div>
+
+    <!-- Task Uncomplete -->
+    <div class="col-md-12" *ngIf="tasks.length != 0">
+      <div class="accordion" id="accordionExample">
+        <div *ngFor="let item of tasks">
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <div class="container-fluid">
+                <div class="row">
+                  <!-- Star -->
+                  <div class="col-md-1 text-right">
+                    <button
+                      class="btn btn-light text-warning"
+                      *ngIf="item.important"
+                    >
+                      <i class="fas fa-star"></i>
+                    </button>
+
+                    <button
+                      class="btn btn-light text-secondary"
+                      *ngIf="!item.important"
+                    >
+                      <i class="fas fa-star"></i>
+                    </button>
+                  </div>
+
+                  <!-- Checkbox complete -->
+                  <div class="col-md-10 text-left">
+                    <h4
+                      class="text-danger my-auto task-item"
+                      data-toggle="collapse"
+                      [attr.data-target]="'#' + item.id"
+                      aria-expanded="false"
+                      aria-controls="collapseOne"
+                      (click)="select(item)"
+                      *ngIf="!item.complete"
+                    >
+                      {{ item.content }}
+                    </h4>
+
+                    <h4
+                      class="text-danger my-auto task-item"
+                      data-toggle="collapse"
+                      [attr.data-target]="'#' + item.id"
+                      aria-expanded="false"
+                      aria-controls="collapseOne"
+                      (click)="select(item)"
+                      *ngIf="item.complete"
+                      [ngStyle]="{
+                        'text-decoration': 'line-through'
+                      }"
+                    >
+                      <i
+                        class="fa fa-check mr-2 font-weight-light"
+                        aria-hidden="true"
+                      ></i>
+                      {{ item.content }}
+                    </h4>
+
+                    <small *ngIf="item.repeat" class="text-danger mr-1">
+                      <i class="fas fa-undo-alt"></i> Repeat
+                    </small>
+
+                    <small *ngIf="item.dueDate" class="text-danger mr-1">
+                      <i class="fa fa-calendar" aria-hidden="true"></i>
+                      {{ item.dueDate }}
+                    </small>
+
+                    <div>
+                      <span *ngFor="let item of item.category">
+                        <small [innerHTML]="getCategory(item)"> </small>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Star -->
+                  <div class="col-md-1 text-right">
+                    <button
+                      class="btn btn-light text-danger"
+                      (click)="deleteTask(item)"
+                    >
+                      <i class="fa fa-trash" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Setting -->
+            <div
+              [id]="item.id"
+              class="collapse"
+              aria-labelledby="headingOne"
+              data-parent="#accordionExample"
+            >
+              <div class="card-body">
+                <div class="container-fluid">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <ul class="list-group">
+                        <li class="list-group-item">
+                          <h6 class="text-danger">
+                            <i class="fa fa-plus" aria-hidden="true"></i> Add
+                            Step
+                          </h6>
+
+                          <div class="input-group mb-3">
+                            <input
+                              type="text"
+                              class="form-control"
+                              [(ngModel)]="text"
+                            />
+
+                            <div class="input-group-append">
+                              <button
+                                class="btn btn-outline-danger"
+                                (click)="addStep($event)"
+                              >
+                                ADD
+                              </button>
+                            </div>
+                          </div>
+
+                          <ul class="list-group">
+                            <div *ngFor="let step of task.step">
+                              <li
+                                class="list-group-item d-flex justify-content-between align-items-center"
+                              >
+                                {{ step }}
+                                <span class="badge">
+                                  <button class="btn btn-outline-danger btn-sm">
+                                    <i
+                                      class="fa fa-trash"
+                                      aria-hidden="true"
+                                    ></i>
+                                  </button>
+                                </span>
+                              </li>
+                            </div>
+                          </ul>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div class="col-md-4">
+                      <ul class="list-group">
+                        <li class="list-group-item">
+                          <button
+                            class="btn btn-light btn-sm"
+                            *ngIf="task.complete"
+                            (click)="markComplete($event)"
+                          >
+                            <h6 class="text-danger">
+                              <i class="fa fa-check" aria-hidden="true"></i>
+                              Mark as completed
+                            </h6>
+                          </button>
+
+                          <button
+                            class="btn btn-light btn-sm"
+                            *ngIf="!task.complete"
+                            (click)="markComplete($event)"
+                          >
+                            <h6 class="text-secondary">
+                              <i class="fa fa-times" aria-hidden="true"></i>
+                              Unmark completed
+                            </h6>
+                          </button>
+                        </li>
+
+                        <li class="list-group-item">
+                          <button
+                            class="btn btn-light btn-sm"
+                            *ngIf="task.important"
+                            (click)="markImportant($event)"
+                          >
+                            <h6 class="text-danger">
+                              <i class="fa fa-star" aria-hidden="true"></i>
+                              Unmark important
+                            </h6>
+                          </button>
+
+                          <button
+                            class="btn btn-light btn-sm"
+                            *ngIf="!task.important"
+                            (click)="markImportant($event)"
+                          >
+                            <h6 class="text-secondary">
+                              <i class="fa fa-star" aria-hidden="true"></i>
+                              Mark as important
+                            </h6>
+                          </button>
+                        </li>
+
+                        <li class="list-group-item">
+                          <button
+                            class="btn btn-light btn-sm"
+                            *ngIf="task.repeat"
+                            (click)="markRepeat($event)"
+                          >
+                            <h6 class="text-danger">
+                              <i class="fas fa-undo-alt"></i>
+                              Repeat
+                            </h6>
+                          </button>
+
+                          <button
+                            class="btn btn-light btn-sm"
+                            *ngIf="!task.repeat"
+                            (click)="markRepeat($event)"
+                          >
+                            <h6 class="text-secondary">
+                              <i class="fas fa-undo-alt"></i>
+                              Repeat
+                            </h6>
+                          </button>
+                        </li>
+
+                        <li class="list-group-item">
+                          <button
+                            class="btn btn-light btn-sm"
+                            data-toggle="modal"
+                            [attr.data-target]="'#category' + item.id"
+                          >
+                            <h6 class="text-danger">
+                              <i class="fas fa-tag"></i>
+                              Pick a category
+                            </h6>
+                          </button>
+
+                          <!-- Modal -->
+                          <div
+                            class="modal fade"
+                            [id]="'category' + item.id"
+                            tabindex="-1"
+                            role="dialog"
+                            aria-hidden="true"
+                          >
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title">
+                                    Pick a category
+                                  </h5>
+                                  <button
+                                    type="button"
+                                    class="close"
+                                    data-dismiss="modal"
+                                    aria-label="Close"
+                                  >
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+                                <div class="modal-body">
+                                  <div class="container-fluid">
+                                    <div class="row">
+                                      <div class="col-md-4">
+                                        <button
+                                          class="btn btn-outline-primary mt-2"
+                                          (click)="
+                                            pickCategory($event, 'primary')
+                                          "
+                                        >
+                                          <i class="fas fa-tasks"></i>
+                                          Primary
+                                        </button>
+                                        <button
+                                          class="btn btn-outline-secondary mt-2"
+                                          (click)="
+                                            pickCategory($event, 'secondary')
+                                          "
+                                        >
+                                          <i class="fas fa-magnet"></i>
+                                          Secondary
+                                        </button>
+                                      </div>
+                                      <div class="col-md-4">
+                                        <button
+                                          class="btn btn-outline-danger mt-2"
+                                          (click)="
+                                            pickCategory($event, 'danger')
+                                          "
+                                        >
+                                          <i
+                                            class="fas fa-exclamation-circle"
+                                          ></i>
+                                          Danger
+                                        </button>
+                                        <button
+                                          class="btn btn-outline-success mt-2"
+                                          (click)="
+                                            pickCategory($event, 'success')
+                                          "
+                                        >
+                                          <i class="fas fa-check-circle"></i>
+                                          Success
+                                        </button>
+                                      </div>
+
+                                      <div class="col-md-4">
+                                        <button
+                                          class="btn btn-outline-warning mt-2"
+                                          (click)="
+                                            pickCategory($event, 'warning')
+                                          "
+                                        >
+                                          <i
+                                            class="fas fa-exclamation-triangle"
+                                          ></i>
+                                          Warning
+                                        </button>
+                                        <button
+                                          class="btn btn-outline-info mt-2"
+                                          (click)="
+                                            pickCategory($event, 'information')
+                                          "
+                                        >
+                                          <i
+                                            class="fa fa-info"
+                                            aria-hidden="true"
+                                          ></i>
+                                          Information
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <div *ngFor="let item of task.category">
+                                    <span [innerHTML]="getCategory(item)">
+                                    </span>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    class="btn btn-outline-danger"
+                                    data-dismiss="modal"
+                                  >
+                                    Close
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+
+                        <li class="list-group-item">
+                          <button class="btn btn-light btn-sm">
+                            <h6 class="text-danger text-left">
+                              <i class="fa fa-calendar" aria-hidden="true"></i>
+                              Remind me
+                              <input
+                                type="date"
+                                name="dateofbirth"
+                                class="form-control text-color border-danger mt-2"
+                                [(ngModel)]="task.dueDate"
+                              />
+                            </h6>
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div class="col-md-4">
+                      <div class="form-group">
+                        <label for="note">
+                          <h6 class="text-danger">
+                            <i class="fa fa-sticky-note" aria-hidden="true"></i>
+                            Note
+                          </h6>
+                        </label>
+                        <textarea
+                          class="form-control"
+                          id="note"
+                          rows="9"
+                          placeholder="Add note to task"
+                          [(ngModel)]="task.note"
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <!-- Check Update -->
+                    <div class="col-md-6 mt-2">
+                      <span *ngFor="let item of task.category">
+                        <span [innerHTML]="getCategory(item)"></span>
+                      </span>
+                      <hr />
+                      <small class="text-dark" *ngIf="task.dueDate">
+                        <i class="fa fa-calendar" aria-hidden="true"></i>
+                        {{ task.dueDate }}
+                      </small>
+                    </div>
+
+                    <div class="col-md-6 mt-2">
+                      <button
+                        class="btn btn-block btn-danger btn-lg"
+                        (click)="updateTask($event)"
+                      >
+                        Update
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Clear all -->
+        <div class="card-footer border-right border-bottom border-left">
+          <div class="text-center">
+            <button
+              class="btn btn-outline-danger btn-lg"
+              (click)="deleteAllTask($event)"
+            >
+              <i class="fa fa-trash" aria-hidden="true"></i> CLEAR ALL
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
